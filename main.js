@@ -48,3 +48,41 @@ pc.passive.ondatachannel = ({channel}) => {
 };
 
 // Now do whatever you like with an active peer connection...
+
+
+
+// Now do whatever you like with a peer connection established...
+pc.passive.ontrack = ({ track, streams: [stream] }) => {
+  displayStream('#incoming', stream);
+}
+
+function addStreamingMedia(peer, stream) {
+  if (stream) {
+    for (let track of stream.getTracks()) {
+      peer.addTrack(track, stream);
+    }
+  }
+  // Renegotiate after adding media
+  // TODO: Put in a proper `onnegotiationneeded` callback
+  negotiate(pc.active, pc.passive);
+}
+function displayStream(selector, stream) {
+  document.querySelector(selector).srcObject = stream;
+}
+async function requestUserMedia(constraints) {
+  const stream = new MediaStream();
+  const media = await navigator.mediaDevices.getUserMedia(constraints);
+  // TODO: Isolate track to apply additional gUM constraints
+  stream.addTrack(media.getVideoTracks()[0]);
+  addStreamingMedia(pc.active, stream);
+  displayStream('#outgoing', stream);
+}
+
+const constraints = { audio: false, video: true };
+
+const button = document.querySelector('#controls button');
+button.onclick = (event) => {
+  // TODO: requestUserMedia() should only run once
+  requestUserMedia(constraints);
+  event.target.innerText = 'Update';
+}

@@ -2,11 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>WebRTC Testbed</title>
+    <title>WebRTC Testbed: scaleResolutionDownBy</title>
   </head>
   <body>
-    <h1>WebRTC Testbed</h1>
-    <p>All the action is in the browser console...</p>
+    <h1>WebRTC Testbed: <code>scaleResolutionDownBy</code></h1>
+    <nav id="controls">
+      <button role="button">Start</button>
+    </nav>
+    <figure id="active">
+      <figcaption>Outgoing, Local Video (<code>getUserMedia()</code>)</figcaption>
+      <video id="outgoing"
+        autoplay
+        muted
+        playsinline
+        poster="img/placeholder.png">
+      </video>
+    </figure>
+    <figure id="passive">
+      <figcaption>Incoming, Remote Video</figcaption>
+      <video id="incoming"
+        autoplay
+        muted
+        playsinline
+        poster="img/placeholder.png">
+      </video>
+    </figure>
     <script src="main.js"></script>
   </body>
 </html>
