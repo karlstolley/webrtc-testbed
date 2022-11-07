@@ -51,24 +51,8 @@ pc.passive.ondatachannel = ({channel}) => {
 
 
 
-// Now do whatever you like with a peer connection established...
-pc.passive.ontrack = ({ track, streams: [stream] }) => {
-  displayStream('#incoming', stream);
-}
+// Set up test bed for gUM and sRDB
 
-function addStreamingMedia(peer, stream) {
-  if (stream) {
-    for (let track of stream.getTracks()) {
-      peer.addTrack(track, stream);
-    }
-  }
-  // Renegotiate after adding media
-  // TODO: Put in a proper `onnegotiationneeded` callback
-  negotiate(pc.active, pc.passive);
-}
-function displayStream(selector, stream) {
-  document.querySelector(selector).srcObject = stream;
-}
 async function requestUserMedia(constraints) {
   const stream = new MediaStream();
   const media = await navigator.mediaDevices.getUserMedia(constraints);
@@ -77,6 +61,26 @@ async function requestUserMedia(constraints) {
   addStreamingMedia(pc.active, stream);
   displayStream('#outgoing', stream);
 }
+
+function addStreamingMedia(peer, stream) {
+  if (stream) {
+    for (let track of stream.getTracks()) {
+      peer.addTrack(track, stream);
+    }
+  }
+}
+
+function displayStream(selector, stream) {
+  document.querySelector(selector).srcObject = stream;
+}
+
+pc.passive.ontrack = ({ track, streams: [stream] }) => {
+  displayStream('#incoming', stream);
+}
+
+
+
+
 
 const constraints = { audio: false, video: true };
 
