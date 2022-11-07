@@ -5,12 +5,6 @@ const pc = {
   passive: new RTCPeerConnection(null)
 }
 
-// ICE events
-pc.active.onicecandidate = ({candidate}) => pc.passive.addIceCandidate(candidate);
-pc.passive.onicecandidate = ({candidate}) => pc.active.addIceCandidate(candidate);
-pc.active.oniceconnectionstatechange = event => { console.log(`Active ICE: ${pc.active.iceConnectionState}`); }
-pc.passive.oniceconnectionstatechange = event => { console.log(`Passive ICE: ${pc.passive.iceConnectionState}`); }
-
 function negotiate(a, b) {
   return a.createOffer()
     .then(function(offer) {
@@ -36,7 +30,16 @@ function registerDataChannelCallbacks(dc, role) {
   }
 }
 
-// This will be enough to always establish a peer connection
+// Register callbacks on ICE events
+pc.active.onicecandidate = ({candidate}) => pc.passive.addIceCandidate(candidate);
+pc.passive.onicecandidate = ({candidate}) => pc.active.addIceCandidate(candidate);
+pc.active.oniceconnectionstatechange = () => { console.log(`Active ICE: ${pc.active.iceConnectionState}`); }
+pc.passive.oniceconnectionstatechange = () => { console.log(`Passive ICE: ${pc.passive.iceConnectionState}`); }
+
+// Register callback on negotiation-needed event
+pc.active.onnegotiationneeded = () => { negotiate(pc.active, pc.passive); }
+
+// A data channel is a gUM-free way of establishing a peer connection
 const dc = pc.active.createDataChannel('up', { protocol: 'strings' });
 registerDataChannelCallbacks(dc, 'active');
 // Register the same call backs on the passive peer
@@ -44,6 +47,4 @@ pc.passive.ondatachannel = ({channel}) => {
   registerDataChannelCallbacks(channel, 'passive');
 };
 
-negotiate(pc.active, pc.passive);
-
-// Now do whatever you like with a peer connection established...
+// Now do whatever you like with an active peer connection...
