@@ -57,7 +57,9 @@ async function requestUserMedia(constraints) {
   const stream = new MediaStream();
   const media = await navigator.mediaDevices.getUserMedia(constraints);
   // TODO: Isolate track to apply additional gUM constraints
-  stream.addTrack(media.getVideoTracks()[0]);
+  const track = media.getVideoTracks()[0];
+  console.log('Constraints', track.getConstraints());
+  stream.addTrack(track);
   addStreamingMedia(pc.active, stream);
   displayStream('#outgoing', stream);
 }
