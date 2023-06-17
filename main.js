@@ -5,6 +5,21 @@ const pc = {
   passive: new RTCPeerConnection(null)
 }
 
+const ndca = pc.active.createDataChannel('negotiated', { negotiated: true, id: 5});
+const ndcb = pc.passive.createDataChannel('negotiated', { negotiated: true, id: 5});
+
+registerDataChannelCallbacks(ndca, 'active - negotiated');
+registerDataChannelCallbacks(ndcb, 'passive - negotiated');
+
+// Register callbacks on ICE events
+pc.active.onicecandidate = ({candidate}) => pc.passive.addIceCandidate(candidate);
+pc.passive.onicecandidate = ({candidate}) => pc.active.addIceCandidate(candidate);
+pc.active.oniceconnectionstatechange = () => { console.log(`Active ICE: ${pc.active.iceConnectionState}`); }
+pc.passive.oniceconnectionstatechange = () => { console.log(`Passive ICE: ${pc.passive.iceConnectionState}`); }
+
+// Register callback on negotiation-needed event
+pc.active.onnegotiationneeded = () => { negotiate(pc.active, pc.passive); }
+
 function negotiate(a, b) {
   return a.createOffer()
     .then(function(offer) {
@@ -30,21 +45,12 @@ function registerDataChannelCallbacks(dc, role) {
   }
 }
 
-// Register callbacks on ICE events
-pc.active.onicecandidate = ({candidate}) => pc.passive.addIceCandidate(candidate);
-pc.passive.onicecandidate = ({candidate}) => pc.active.addIceCandidate(candidate);
-pc.active.oniceconnectionstatechange = () => { console.log(`Active ICE: ${pc.active.iceConnectionState}`); }
-pc.passive.oniceconnectionstatechange = () => { console.log(`Passive ICE: ${pc.passive.iceConnectionState}`); }
-
-// Register callback on negotiation-needed event
-pc.active.onnegotiationneeded = () => { negotiate(pc.active, pc.passive); }
-
 // A data channel is a gUM-free way of establishing a peer connection
-const dc = pc.active.createDataChannel('up', { protocol: 'strings' });
-registerDataChannelCallbacks(dc, 'active');
+// const dc = pc.active.createDataChannel('up', { protocol: 'strings' });
+// registerDataChannelCallbacks(dc, 'active');
 // Register the same call backs on the passive peer
-pc.passive.ondatachannel = ({channel}) => {
-  registerDataChannelCallbacks(channel, 'passive');
-};
+// pc.passive.ondatachannel = ({channel}) => {
+//   registerDataChannelCallbacks(channel, 'passive');
+// };
 
 // Now do whatever you like with an active peer connection...
